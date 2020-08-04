@@ -6,37 +6,58 @@ class App extends Component {
 
   state = {
     persons: [
-      { name: 'Max', age: 28 },
-      { name: 'Manu', age: 29 },
-      { name: 'Stephanie', age: 26 }
+      { id: '000', name: 'Max', age: 28 },
+      { id: '001', name: 'Manu', age: 29 },
+      { id: '002', name: 'Stephanie', age: 26 }
     ],
     otherState: 'some other value',
     showPersons: false
   };
 
-  switchNameHandler = (newName) => {
-    // console.log('Was clicked!');
-    // DON'T DO THIS: this.state.persons[0].name = 'Maximilian';
-    this.setState({
-      persons: [
-        { name: newName, age: 28 },
-        { name: 'Manu', age: 29 },
-        { name: 'Stephanie', age: 27 }
-      ]
-    });
+
+  nameChangedHandler = (event, id)=> {
+    //find the index of the person of will manipulated
+    const personIndex = this.state.persons.findIndex(
+      personIdx => {
+        return personIdx.id === id;
+      }
+    );
+    
+    // create a clone that selected person, because objects are reference type
+    // you do not want to mutate them
+    const person = {
+      ...this.state.persons[personIndex]
+    };
+
+    person.name = event.target.value;
+
+    // create a clone the persons array
+    const persons = [...this.state.persons];
+    // swap the updated person with older one
+    persons[personIndex] = person;
+
+    // set the state of persons array to updated persons array
+    this.setState({ persons: persons});
   };
 
-  nameChangedHandler = (event)=> {
-    this.setState({
-      persons: [
-        { name: 'Max', age: 28 },
-        { name: event.target.value, age: 29 },
-        { name: 'Stephanie', age: 26 }
-      ]
-    });
+  deletePersonHandler = (personIndex) => {
+
+    // clone the persons array
+    const persons = [...this.state.persons];
+
+    //displaying index and id info in console
+    console.log("index: "+personIndex);
+    console.log("id: "+persons[personIndex].id);
+
+    // delete the person element which pointed with its index
+    persons.splice(personIndex, 1);
+
+    // set the state with the updated persons array
+    this.setState({persons: persons});
   };
 
   togglePersonsHandler = () => {
+
     const doesShow = this.state.showPersons;
     this.setState({showPersons: !doesShow});
   };
@@ -54,31 +75,23 @@ class App extends Component {
       cursor: 'pointer'
     };
 
+    // if the showPersons is false then display nothing
     let persons = null;
     
     if(this.state.showPersons){
       persons = (
         <div>
-          <Person
-            name={this.state.persons[0].name}
-            age={this.state.persons[0].age}
-          />
-
-          <Person
-            name={this.state.persons[1].name}
-            age={this.state.persons[1].age}
-            click={this.switchNameHandler.bind(this, 'Max!!')}
-            changed={this.nameChangedHandler}
-          >
-            My Hobbies: Racing
-          </Person>
-
-          <Person
-            name={this.state.persons[2].name}
-            age={this.state.persons[2].age}
-          />
+          {this.state.persons.map(
+            (person, index) =>{
+              return <Person
+                click={() => this.deletePersonHandler(index)} 
+                name={person.name} 
+                age={person.age}
+                key={person.id}
+                changed={(event) => this.nameChangedHandler(event, person.id)} />
+            }
+          )}
         </div>
-
       );
     }
 
